@@ -103,10 +103,13 @@
 <style>
     .login-container {
         min-height: 100vh;
-        min-height: -webkit-fill-available;
+        /* Dynamic Viewport aligned height */
+        min-height: 100dvh;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-sizing: border-box;
         background: linear-gradient(
             135deg,
             #0f172a 0%,

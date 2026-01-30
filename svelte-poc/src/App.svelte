@@ -402,7 +402,6 @@
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
         min-height: 100vh;
-        min-height: -webkit-fill-available; /* iOS Safari fix */
         color: #f8fafc;
         overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
