@@ -197,4 +197,30 @@
         width: 100%;
         height: 320px;
     }
+
+    @media (max-width: 480px) {
+        .chart-card {
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .chart-header h3 {
+            font-size: 14px;
+        }
+
+        .toggle-group button {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        .chart-container {
+            height: 220px;
+        }
+    }
 </style>

@@ -641,6 +641,104 @@
         }
     }
 
+    /* Tablet Responsive */
+    @media (max-width: 768px) {
+        main {
+            padding: 20px;
+            padding-left: 20px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .user-controls {
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 22px;
+        }
+
+        header p {
+            font-size: 13px;
+        }
+
+        .nav-btn,
+        .logout-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 480px) {
+        main {
+            padding: 15px;
+            padding-top: 70px; /* Space for fixed filter button */
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .header-content > div:first-child {
+            width: 100%;
+        }
+
+        .user-controls {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .username {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px 0;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            margin-top: 4px;
+            order: 4;
+        }
+
+        h1 {
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        header p {
+            font-size: 12px;
+        }
+
+        .nav-btn,
+        .logout-btn {
+            width: 100%;
+            text-align: center;
+            padding: 10px 6px;
+            font-size: 11px;
+        }
+
+        .svelte-badge-footer {
+            font-size: 10px;
+            padding: 3px 10px;
+        }
+
+        .charts-grid {
+            gap: 15px;
+        }
+    }
+
     .loading {
         display: flex;
         flex-direction: column;

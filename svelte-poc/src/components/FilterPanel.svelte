@@ -431,4 +431,55 @@
     .reset-btn:hover {
         background: rgba(248, 113, 113, 0.1);
     }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .filter-toggle-btn {
+            top: 20px;
+            left: 15px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .filter-panel {
+            width: 85%;
+            max-width: 280px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .filter-toggle-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            padding: 8px 14px;
+            font-size: 12px;
+            gap: 6px;
+            border-radius: 8px;
+            z-index: 1001;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+
+        .filter-panel {
+            width: 85%;
+            max-width: 280px;
+        }
+
+        .panel-header {
+            padding: 15px;
+        }
+
+        .panel-content {
+            padding: 12px;
+        }
+
+        .filter-option {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+    }
 </style>

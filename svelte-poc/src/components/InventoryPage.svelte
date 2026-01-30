@@ -1180,4 +1180,173 @@
         color: #64748b;
         font-size: 12px;
     }
+
+    /* Tablet Responsive */
+    @media (max-width: 768px) {
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .filter-bar {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .filter-actions {
+            grid-column: span 2;
+            justify-content: flex-start;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .pagination-footer {
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            margin: 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .toast {
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+        }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 480px) {
+        .card-header {
+            padding: 15px;
+        }
+
+        .header-title h2 {
+            font-size: 16px;
+        }
+
+        .filter-bar {
+            grid-template-columns: 1fr;
+            padding: 12px;
+        }
+
+        .filter-actions {
+            grid-column: span 1;
+            flex-direction: column;
+        }
+
+        .filter-actions button {
+            width: 100%;
+        }
+
+        .table-responsive {
+            margin: 0 -12px;
+        }
+
+        th,
+        td {
+            padding: 8px 10px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* Hide less important columns on mobile */
+        th:nth-child(7),
+        td:nth-child(7),
+        th:nth-child(8),
+        td:nth-child(8) {
+            display: none;
+        }
+
+        .category-tag,
+        .site-tag,
+        .role-badge {
+            font-size: 9px;
+            padding: 2px 4px;
+        }
+
+        .pagination-footer {
+            padding: 12px;
+        }
+
+        .page-info {
+            font-size: 11px;
+        }
+
+        .page-btn {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .page-indicator {
+            font-size: 11px;
+            min-width: 60px;
+        }
+
+        .modal-content {
+            max-width: 95%;
+            margin: 10px;
+        }
+
+        .modal-header {
+            padding: 15px;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            flex-direction: column;
+        }
+
+        .modal-footer button {
+            width: 100%;
+        }
+
+        .toast {
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            padding: 12px 16px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+        }
+
+        .confirm-box {
+            max-width: 90%;
+        }
+
+        .confirm-body {
+            padding: 20px 15px;
+        }
+
+        .confirm-icon {
+            font-size: 32px;
+        }
+
+        .confirm-body h3 {
+            font-size: 16px;
+        }
+
+        .confirm-body p {
+            font-size: 13px;
+        }
+    }
 </style>

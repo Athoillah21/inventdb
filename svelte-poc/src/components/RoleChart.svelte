@@ -114,4 +114,20 @@
         width: 100%;
         height: 320px;
     }
+
+    @media (max-width: 480px) {
+        .chart-card {
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .chart-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
 </style>

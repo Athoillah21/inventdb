@@ -308,4 +308,55 @@
     .login-footer a:hover {
         text-decoration: underline;
     }
+
+    /* Mobile Responsive */
+    @media (max-width: 480px) {
+        .login-container {
+            padding: 15px;
+        }
+
+        .login-card {
+            padding: 25px 20px;
+            border-radius: 16px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+        }
+
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .login-header h1 {
+            font-size: 20px;
+        }
+
+        .login-header p {
+            font-size: 13px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group input {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .login-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+        }
+    }
 </style>
