@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Database - PostgreSQL Dashboard{% endblock %}
+
+{% block content %}
+<div class="delete-card">
+    <div class="icon">⚠️</div>
+    <h2>Confirm Deletion</h2>
+    <p>Are you sure you want to delete <strong>{{ object.hostname }} - {{ object.db }}</strong>?<br>
+        This action cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="actions">
+            <a href="{% url 'inventory_list' %}" class="btn btn-secondary">← Cancel</a>
+            <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

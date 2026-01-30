@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - PostgreSQL Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <p>{% if object %}Edit database information{% else %}Add a new database to the inventory{% endif %}</p>
+</div>
+
+<div class="form-container">
+    <div class="form-card">
+        <h2>🐘 Database Information</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_no">Record Number</label>
+                    {{ form.no }}
+                </div>
+                <div class="form-group">
+                    <label for="id_hostname">Hostname</label>
+                    {{ form.hostname }}
+                </div>
+                <div class="form-group">
+                    <label for="id_db">Database Name</label>
+                    {{ form.db }}
+                </div>
+                <div class="form-group">
+                    <label for="id_database_status">Database Status</label>
+                    {{ form.database_status }}
+                </div>
+                <div class="form-group">
+                    <label for="id_ip_oam">IP OAM</label>
+                    {{ form.ip_oam }}
+                </div>
+                <div class="form-group">
+                    <label for="id_ip_service">IP Service</label>
+                    {{ form.ip_service }}
+                </div>
+                <div class="form-group">
+                    <label for="id_category_database">Category</label>
+                    {{ form.category_database }}
+                </div>
+                <div class="form-group">
+                    <label for="id_port">Port</label>
+                    {{ form.port }}
+                </div>
+                <div class="form-group">
+                    <label for="id_version">Version</label>
+                    {{ form.version }}
+                </div>
+                <div class="form-group">
+                    <label for="id_installation_date">Installation Date</label>
+                    {{ form.installation_date }}
+                </div>
+                <div class="form-group full-width">
+                    <label for="id_operating_system">Operating System</label>
+                    {{ form.operating_system }}
+                </div>
+                <div class="form-group">
+                    <label for="id_apps">Apps</label>
+                    {{ form.apps }}
+                </div>
+                <div class="form-group">
+                    <label for="id_business_category">Business Category</label>
+                    {{ form.business_category }}
+                </div>
+                <div class="form-group">
+                    <label for="id_departemen">Department</label>
+                    {{ form.departemen }}
+                </div>
+                <div class="form-group">
+                    <label for="id_owner">Owner</label>
+                    {{ form.owner }}
+                </div>
+                <div class="form-group">
+                    <label for="id_pic_operational">PIC Operational</label>
+                    {{ form.pic_operational }}
+                </div>
+                <div class="form-group">
+                    <label for="id_monitoring">Monitoring</label>
+                    {{ form.monitoring }}
+                </div>
+                <div class="form-group">
+                    <label for="id_site">Site</label>
+                    {{ form.site }}
+                </div>
+                <div class="form-group">
+                    <label for="id_installed_by">Installed By</label>
+                    {{ form.installed_by }}
+                </div>
+                <div class="form-group">
+                    <label for="id_size_mountpoint">Size Mountpoint</label>
+                    {{ form.size_mountpoint }}
+                </div>
+                <div class="form-group">
+                    <label for="id_size_database">Size Database</label>
+                    {{ form.size_database }}
+                </div>
+                <div class="form-group full-width">
+                    <label for="id_notes">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'inventory_list' %}" class="btn btn-secondary">← Cancel</a>
+                <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

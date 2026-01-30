@@ -1,0 +1,866 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - PostgreSQL Inventory{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+    .chart-container {
+        width: 100%;
+        height: 320px;
+    }
+
+    /* Filter Panel Styles */
+    .filter-panel {
+        position: fixed;
+        top: 0;
+        left: -320px;
+        width: 300px;
+        height: 100vh;
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        border-right: 1px solid rgba(47, 111, 126, 0.3);
+        z-index: 1000;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .filter-panel.open {
+        left: 0;
+    }
+
+    .filter-panel-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(47, 111, 126, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        background: #0f172a;
+        z-index: 10;
+    }
+
+    .filter-panel-header h3 {
+        margin: 0;
+        color: #f8fafc;
+        font-size: 16px;
+    }
+
+    .filter-panel-content {
+        padding: 16px;
+    }
+
+    .filter-section {
+        margin-bottom: 20px;
+    }
+
+    .filter-section-title {
+        color: #94a3b8;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        margin: 4px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+
+    .filter-option:hover {
+        background: rgba(47, 111, 126, 0.2);
+    }
+
+    .filter-option.active {
+        background: rgba(6, 182, 212, 0.2);
+        color: #22d3ee;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .filter-option input[type="checkbox"] {
+        margin-right: 10px;
+        accent-color: #06b6d4;
+    }
+
+    .filter-toggle-btn {
+        position: fixed;
+        top: 80px;
+        left: 16px;
+        z-index: 999;
+        background: linear-gradient(135deg, #047C94 0%, #2F6F7E 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(4, 124, 148, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .filter-toggle-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(4, 124, 148, 0.4);
+    }
+
+    .filter-toggle-btn .badge {
+        background: #f87171;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 11px;
+        margin-left: 4px;
+    }
+
+    .filter-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .filter-overlay.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .clear-section-btn {
+        background: transparent;
+        border: none;
+        color: #f87171;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .clear-section-btn:hover {
+        background: rgba(248, 113, 113, 0.1);
+    }
+
+    .apply-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #047C94 0%, #22d3ee 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3);
+    }
+
+    .reset-btn {
+        width: 100%;
+        padding: 10px;
+        background: transparent;
+        border: 1px solid rgba(248, 113, 113, 0.5);
+        border-radius: 8px;
+        color: #f87171;
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .reset-btn:hover {
+        background: rgba(248, 113, 113, 0.1);
+    }
+
+    .active-filter-count {
+        color: #22d3ee;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Toggle Button -->
+<button class="filter-toggle-btn" onclick="toggleFilterPanel()">
+    <i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
+    Filters
+    <span id="filterBadge" class="badge" style="display: none;">0</span>
+</button>
+
+<!-- Filter Overlay -->
+<div id="filterOverlay" class="filter-overlay" onclick="toggleFilterPanel()"></div>
+
+<!-- Slide-out Filter Panel -->
+<div id="filterPanel" class="filter-panel">
+    <div class="filter-panel-header">
+        <h3><i data-lucide="filter"
+                style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;"></i>Filters</h3>
+        <button onclick="toggleFilterPanel()"
+            style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px;">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+    </div>
+    <div class="filter-panel-content">
+        <div id="activeFilterCount" class="active-filter-count" style="display: none; margin-bottom: 12px;">
+            <i data-lucide="check-circle" style="width: 12px; height: 12px; vertical-align: middle;"></i>
+            <span id="filterCountText">0 filters active</span>
+        </div>
+
+        <!-- Hostname Filter (Text Input) -->
+        <div class="filter-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filter-section-title">Hostname</div>
+                <button class="clear-section-btn" onclick="clearHostnameFilter()">Clear</button>
+            </div>
+            <input type="text" id="hostnameFilter" placeholder="Type hostname to filter..."
+                style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(47, 111, 126, 0.4); border-radius: 8px; color: #f8fafc; font-size: 13px; outline: none; transition: border-color 0.2s;"
+                onfocus="this.style.borderColor='#22d3ee'" onblur="this.style.borderColor='rgba(47, 111, 126, 0.4)'">
+            <div style="color: #64748b; font-size: 11px; margin-top: 6px;">Search by partial hostname match</div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filter-section-title">Category</div>
+                <button class="clear-section-btn" onclick="clearSection('category')">Clear</button>
+            </div>
+            <div id="categoryFilters"></div>
+        </div>
+
+        <!-- Site Filter -->
+        <div class="filter-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filter-section-title">Site</div>
+                <button class="clear-section-btn" onclick="clearSection('site')">Clear</button>
+            </div>
+            <div id="siteFilters"></div>
+        </div>
+
+        <!-- Business Category Filter -->
+        <div class="filter-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filter-section-title">Business Category</div>
+                <button class="clear-section-btn" onclick="clearSection('business')">Clear</button>
+            </div>
+            <div id="businessFilters"></div>
+        </div>
+
+        <!-- Role Filter -->
+        <div class="filter-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filter-section-title">Role</div>
+                <button class="clear-section-btn" onclick="clearSection('role')">Clear</button>
+            </div>
+            <div id="roleFilters"></div>
+        </div>
+
+        <button class="apply-btn" onclick="applyFilters()">
+            <i data-lucide="check" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>
+            Apply Filters
+        </button>
+        <button class="reset-btn" onclick="resetAllFilters()">
+            <i data-lucide="rotate-ccw"
+                style="width: 14px; height: 14px; vertical-align: middle; margin-right: 6px;"></i>
+            Reset All
+        </button>
+    </div>
+</div>
+
+<div class="page-header">
+    <h1>Database Analytics Dashboard</h1>
+    <p>Overview of PostgreSQL database infrastructure</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="icon primary"><i data-lucide="database"></i></div>
+        <div class="value" id="statTotal">{{ total_databases }}</div>
+        <div class="label">Total Databases</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon success"><i data-lucide="check-circle"></i></div>
+        <div class="value" id="statProduction">{{ production_count }}</div>
+        <div class="label">Production</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon warning"><i data-lucide="wrench"></i></div>
+        <div class="value" id="statDevelopment">{{ development_count }}</div>
+        <div class="label">Development</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon info"><i data-lucide="flask-conical"></i></div>
+        <div class="value" id="statPreprod">{{ preprod_count }}</div>
+        <div class="label">Pre-Production</div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>Category Distribution</h3>
+        <div id="categoryChart" class="chart-container"></div>
+    </div>
+    <div class="chart-card">
+        <h3>Master/Slave Distribution</h3>
+        <div id="roleChart" class="chart-container"></div>
+    </div>
+    <div class="chart-card">
+        <h3>Site Distribution</h3>
+        <div id="siteChart" class="chart-container"></div>
+    </div>
+    <div class="chart-card">
+        <h3>Business Category</h3>
+        <div id="businessChart" class="chart-container"></div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>PostgreSQL Versions</h3>
+        <div id="versionChart" class="chart-container"></div>
+    </div>
+    <div class="chart-card">
+        <h3>Database Status Overview</h3>
+        <div id="statusChart" class="chart-container"></div>
+    </div>
+</div>
+
+<div class="charts-grid" style="grid-template-columns: 1fr;">
+    <div class="chart-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">Database Growth (Cumulative)</h3>
+            <div class="toggle-group"
+                style="background: rgba(15, 23, 42, 0.5); padding: 4px; border-radius: 6px; border: 1px solid #1e293b;">
+                <button onclick="updateGrowthChart('monthly')" id="btn-monthly"
+                    style="background: #0ea5e9; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">Monthly</button>
+                <button onclick="updateGrowthChart('yearly')" id="btn-yearly"
+                    style="background: transparent; color: #94a3b8; border: none; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">Yearly</button>
+            </div>
+        </div>
+        <div id="growthChart" class="chart-container"></div>
+    </div>
+</div>
+
+<!-- Store data in hidden elements -->
+<script id="chartData" type="application/json">
+{
+    "category": {{ category_data|safe }},
+    "role": {{ role_data|safe }},
+    "site": {{ site_data|safe }},
+    "business": {{ business_data|safe }},
+    "version": {{ version_data|safe }},
+    "status": {{ status_data|safe }},
+    "growth_monthly": {{ growth_monthly|safe }},
+    "growth_yearly": {{ growth_yearly|safe }},
+    "raw_data": {{ raw_data|safe }},
+    "filter_options": {{ filter_options|safe }}
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Parse initial data
+        const chartDataEl = document.getElementById('chartData');
+        let data = {};
+        try {
+            data = JSON.parse(chartDataEl.textContent);
+        } catch (e) {
+            console.error('Error parsing chart data:', e);
+            return;
+        }
+
+        const rawData = data.raw_data || [];
+        const filterOptions = data.filter_options || {};
+
+        // Active filters state
+        let activeFilters = {
+            category: [],
+            site: [],
+            business: [],
+            role: []
+        };
+
+        const colors = {
+            primary: '#002561',
+            secondary: '#2F6F7E',
+            accent: '#047C94',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            info: '#06b6d4',
+            gradient: ['#002561', '#2F6F7E', '#047C94', '#0891b2', '#06b6d4', '#22d3ee']
+        };
+
+        // Chart instances
+        let charts = {};
+
+        // Initialize filter panel options
+        function initFilterPanel() {
+            const sections = {
+                'categoryFilters': { key: 'category', options: filterOptions.category || [] },
+                'siteFilters': { key: 'site', options: filterOptions.site || [] },
+                'businessFilters': { key: 'business', options: filterOptions.business || [] },
+                'roleFilters': { key: 'role', options: filterOptions.role || [] }
+            };
+
+            for (const [containerId, config] of Object.entries(sections)) {
+                const container = document.getElementById(containerId);
+                if (!container) continue;
+
+                container.innerHTML = config.options.map(opt => `
+                <label class="filter-option" data-type="${config.key}" data-value="${opt}">
+                    <input type="checkbox" value="${opt}"> ${opt}
+                </label>
+            `).join('');
+            }
+
+            // Add click handlers
+            document.querySelectorAll('.filter-option').forEach(el => {
+                el.addEventListener('click', function (e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = this.querySelector('input');
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    this.classList.toggle('active', this.querySelector('input').checked);
+                });
+            });
+        }
+
+        // Toggle filter panel
+        window.toggleFilterPanel = function () {
+            const panel = document.getElementById('filterPanel');
+            const overlay = document.getElementById('filterOverlay');
+            panel.classList.toggle('open');
+            overlay.classList.toggle('open');
+            lucide.createIcons();
+        };
+
+        // Clear a specific section
+        window.clearSection = function (type) {
+            document.querySelectorAll(`.filter-option[data-type="${type}"]`).forEach(el => {
+                el.classList.remove('active');
+                el.querySelector('input').checked = false;
+            });
+        };
+
+        // Apply filters (fast client-side)
+        window.applyFilters = function () {
+            // Collect active filters
+            activeFilters = { category: [], site: [], business: [], role: [] };
+
+            document.querySelectorAll('.filter-option.active').forEach(el => {
+                const type = el.dataset.type;
+                const value = el.dataset.value;
+                if (activeFilters[type]) {
+                    activeFilters[type].push(value);
+                }
+            });
+
+            // Get hostname filter
+            const hostnameInput = document.getElementById('hostnameFilter');
+            const hostnameFilter = hostnameInput ? hostnameInput.value.trim().toLowerCase() : '';
+
+            // Filter raw data
+            const filtered = rawData.filter(item => {
+                // Hostname filter (partial match, case-insensitive)
+                if (hostnameFilter && !item.hostname.toLowerCase().includes(hostnameFilter)) return false;
+                if (activeFilters.category.length && !activeFilters.category.includes(item.category)) return false;
+                if (activeFilters.site.length && !activeFilters.site.includes(item.site)) return false;
+                if (activeFilters.business.length && !activeFilters.business.includes(item.business)) return false;
+                if (activeFilters.role.length && !activeFilters.role.includes(item.role)) return false;
+                return true;
+            });
+
+            // Update badge
+            let totalFilters = Object.values(activeFilters).flat().length;
+            if (hostnameFilter) totalFilters++;
+
+            const badge = document.getElementById('filterBadge');
+            const countText = document.getElementById('filterCountText');
+            const activeCount = document.getElementById('activeFilterCount');
+
+            if (totalFilters > 0) {
+                badge.style.display = 'inline';
+                badge.textContent = totalFilters;
+                activeCount.style.display = 'block';
+                countText.textContent = `${totalFilters} filter${totalFilters > 1 ? 's' : ''} active`;
+            } else {
+                badge.style.display = 'none';
+                activeCount.style.display = 'none';
+            }
+
+            // Aggregate filtered data for charts
+            updateChartsWithFilteredData(filtered);
+            updateStatCards(filtered);
+
+            // Close panel
+            toggleFilterPanel();
+        };
+
+        // Reset all filters
+        window.resetAllFilters = function () {
+            document.querySelectorAll('.filter-option').forEach(el => {
+                el.classList.remove('active');
+                el.querySelector('input').checked = false;
+            });
+            activeFilters = { category: [], site: [], business: [], role: [] };
+
+            // Clear hostname filter
+            const hostnameInput = document.getElementById('hostnameFilter');
+            if (hostnameInput) hostnameInput.value = '';
+
+            document.getElementById('filterBadge').style.display = 'none';
+            document.getElementById('activeFilterCount').style.display = 'none';
+
+            // Reset growth chart data
+            currentFilteredGrowthData = null;
+
+            updateChartsWithFilteredData(rawData);
+            updateStatCards(rawData);
+        };
+
+        // Clear hostname filter only
+        window.clearHostnameFilter = function () {
+            const hostnameInput = document.getElementById('hostnameFilter');
+            if (hostnameInput) hostnameInput.value = '';
+        };
+
+        // Aggregate data for charts
+        function aggregateData(items, key) {
+            const counts = {};
+            items.forEach(item => {
+                const val = item[key];
+                if (val) counts[val] = (counts[val] || 0) + 1;
+            });
+            return Object.entries(counts)
+                .map(([k, v]) => ({ [key]: k, count: v }))
+                .sort((a, b) => b.count - a.count);
+        }
+
+        // Update stat cards
+        function updateStatCards(items) {
+            document.getElementById('statTotal').textContent = items.length;
+            document.getElementById('statProduction').textContent = items.filter(i => i.category === 'Production').length;
+            document.getElementById('statDevelopment').textContent = items.filter(i => i.category === 'Development').length;
+            document.getElementById('statPreprod').textContent = items.filter(i => i.category === 'Pre Production').length;
+        }
+
+        // Update all charts with filtered data
+        function updateChartsWithFilteredData(items) {
+            updateCategoryChart(aggregateData(items, 'category').map(d => ({ category_database: d.category, count: d.count })));
+            updateSiteChart(aggregateData(items, 'site').map(d => ({ site: d.site, count: d.count })));
+            updateBusinessChart(aggregateData(items, 'business').slice(0, 8).map(d => ({ business_category: d.business, count: d.count })));
+            updateStatusChart(aggregateData(items, 'status').slice(0, 10).map(d => ({ database_status: d.status, count: d.count })));
+            updateVersionChart(aggregateData(items, 'version').slice(0, 10).map(d => ({ version: d.version, count: d.count })));
+
+            // Role chart (only production items)
+            const prodItems = items.filter(i => i.category === 'Production');
+            updateRoleChart(aggregateData(prodItems, 'role').filter(d => d.role).map(d => ({ role: d.role, count: d.count })));
+
+            // Update growth chart with filtered data
+            updateGrowthChartWithFilteredData(items);
+        }
+
+        // Calculate and update growth chart based on filtered data
+        function updateGrowthChartWithFilteredData(items) {
+            const monthMap = {
+                'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+                'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+                'january': 1, 'february': 2, 'march': 3, 'april': 4, 'june': 6,
+                'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12
+            };
+
+            const monthlyCounts = {};
+            let validDateCount = 0;
+
+            items.forEach(item => {
+                const d = item.installation_date;
+                if (!d) return;
+
+                const dStr = String(d).trim().toLowerCase();
+                if (!dStr) return;
+
+                let year = null, month = null;
+
+                // Try YYYY-MM-DD or YYYY/MM/DD
+                let match = dStr.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+                if (match) {
+                    year = parseInt(match[1]);
+                    month = parseInt(match[2]);
+                } else {
+                    // Try DD-MM-YYYY or DD/MM/YYYY
+                    match = dStr.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+                    if (match) {
+                        year = parseInt(match[3]);
+                        month = parseInt(match[2]);
+                    } else {
+                        // Try "Month YYYY"
+                        match = dStr.match(/([a-z]+)[,\s-]+\d{0,2}[,\s-]*(\d{4})/);
+                        if (match) {
+                            const mStr = match[1];
+                            if (monthMap[mStr]) {
+                                year = parseInt(match[2]);
+                                month = monthMap[mStr];
+                            }
+                        } else {
+                            // Just year
+                            match = dStr.match(/(\d{4})/);
+                            if (match) {
+                                year = parseInt(match[1]);
+                                month = 1;
+                            }
+                        }
+                    }
+                }
+
+                if (year && month && year >= 1990 && year <= 2030 && month >= 1 && month <= 12) {
+                    const key = `${year}-${String(month).padStart(2, '0')}`;
+                    monthlyCounts[key] = (monthlyCounts[key] || 0) + 1;
+                    validDateCount++;
+                }
+            });
+
+            const baseline = items.length - validDateCount;
+            const sortedMonths = Object.keys(monthlyCounts).sort();
+
+            let cumulative = baseline;
+            const monthlyData = sortedMonths.map(key => {
+                const count = monthlyCounts[key];
+                cumulative += count;
+                const [y, m] = key.split('-');
+                const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return {
+                    label: `${monthNames[parseInt(m)]} ${y}`,
+                    added: count,
+                    total: cumulative
+                };
+            });
+
+            // Aggregate yearly
+            const yearlyCounts = {};
+            sortedMonths.forEach(key => {
+                const y = key.split('-')[0];
+                yearlyCounts[y] = (yearlyCounts[y] || 0) + monthlyCounts[key];
+            });
+
+            cumulative = baseline;
+            const yearlyData = Object.keys(yearlyCounts).sort().map(year => {
+                const count = yearlyCounts[year];
+                cumulative += count;
+                return { label: year, added: count, total: cumulative };
+            });
+
+            // Store for toggle
+            currentFilteredGrowthData = { monthly: monthlyData, yearly: yearlyData };
+
+            // Update chart with current view
+            const isMonthly = document.getElementById('btn-monthly').style.background !== 'transparent';
+            updateGrowthChartDisplay(isMonthly ? 'monthly' : 'yearly');
+        }
+
+        let currentFilteredGrowthData = null;
+
+        // Initialize charts
+        function initCharts() {
+            charts.category = echarts.init(document.getElementById('categoryChart'));
+            charts.role = echarts.init(document.getElementById('roleChart'));
+            charts.site = echarts.init(document.getElementById('siteChart'));
+            charts.business = echarts.init(document.getElementById('businessChart'));
+            charts.version = echarts.init(document.getElementById('versionChart'));
+            charts.status = echarts.init(document.getElementById('statusChart'));
+            charts.growth = echarts.init(document.getElementById('growthChart'));
+        }
+
+        // Chart update functions
+        function updateCategoryChart(categoryData) {
+            if (!categoryData.length) { charts.category.clear(); return; }
+            charts.category.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                legend: { bottom: '5%', textStyle: { color: '#94a3b8' } },
+                series: [{
+                    type: 'pie', radius: ['30%', '70%'], center: ['50%', '45%'], roseType: 'area',
+                    itemStyle: { borderRadius: 8, borderColor: '#0f172a', borderWidth: 3 },
+                    label: { color: '#f8fafc', fontSize: 12 },
+                    emphasis: { scale: true, scaleSize: 15, itemStyle: { shadowBlur: 30, shadowColor: 'rgba(47, 111, 126, 0.6)' } },
+                    data: categoryData.map((d, i) => ({ value: d.count, name: d.category_database || 'Unknown', itemStyle: { color: [colors.success, colors.warning, colors.secondary][i] } })),
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        function updateRoleChart(roleData) {
+            if (!roleData.length) { charts.role.clear(); return; }
+            charts.role.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                legend: { bottom: '5%', textStyle: { color: '#94a3b8' } },
+                series: [{
+                    type: 'pie', radius: ['45%', '70%'], center: ['50%', '45%'],
+                    itemStyle: { borderRadius: 10, borderColor: '#0f172a', borderWidth: 3 },
+                    label: { show: true, position: 'outside', color: '#94a3b8', formatter: '{b}\n{d}%' },
+                    labelLine: { lineStyle: { color: '#475569' } },
+                    emphasis: { scale: true, scaleSize: 12, label: { show: true, fontSize: 16, fontWeight: 'bold', color: '#f8fafc' }, itemStyle: { shadowBlur: 25, shadowColor: 'rgba(47, 111, 126, 0.5)' } },
+                    data: roleData.map((d, i) => ({ value: d.count, name: d.role, itemStyle: { color: [colors.success, colors.warning, colors.secondary, '#64748b'][i] } })),
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        function updateSiteChart(siteData) {
+            if (!siteData.length) { charts.site.clear(); return; }
+            charts.site.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' }, formatter: '{b}: {c} ({d}%)' },
+                legend: { bottom: '5%', textStyle: { color: '#94a3b8' } },
+                series: [{
+                    type: 'pie', radius: '65%', center: ['50%', '45%'], selectedMode: 'single', selectedOffset: 20,
+                    label: { color: '#f8fafc', fontSize: 13, formatter: '{b}\n{c}' },
+                    labelLine: { length: 15, length2: 10, lineStyle: { color: '#475569' } },
+                    itemStyle: { borderRadius: 6, borderColor: '#0f172a', borderWidth: 2, shadowBlur: 20, shadowColor: 'rgba(0, 0, 0, 0.3)' },
+                    emphasis: { scale: true, scaleSize: 10, itemStyle: { shadowBlur: 40, shadowColor: 'rgba(47, 111, 126, 0.8)' } },
+                    data: siteData.map((d, i) => ({ value: d.count, name: d.site || 'Unknown', itemStyle: { color: colors.gradient[i] } })),
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        function updateBusinessChart(businessData) {
+            if (!businessData.length) { charts.business.clear(); return; }
+            charts.business.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '10%', top: '8%', bottom: '5%', containLabel: true },
+                xAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)', type: 'dashed' } } },
+                yAxis: { type: 'category', data: businessData.map(d => d.business_category || 'Unknown'), axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 11 } },
+                series: [{
+                    type: 'bar',
+                    data: businessData.map((d, i) => ({ value: d.count, itemStyle: { color: colors.gradient[i % colors.gradient.length], borderRadius: [0, 8, 8, 0] } })),
+                    barWidth: '60%', showBackground: true, backgroundStyle: { color: 'rgba(47, 111, 126, 0.1)', borderRadius: [0, 8, 8, 0] },
+                    label: { show: true, position: 'right', color: '#f8fafc', fontSize: 12 },
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        function updateVersionChart(versionData) {
+            if (!versionData.length) { charts.version.clear(); return; }
+            charts.version.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '4%', top: '15%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: versionData.map(d => d.version), axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 10, rotate: 35 } },
+                yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)', type: 'dashed' } } },
+                series: [{
+                    type: 'bar',
+                    data: versionData.map((d, i) => ({ value: d.count, itemStyle: { color: colors.gradient[i % colors.gradient.length], borderRadius: [8, 8, 0, 0] } })),
+                    barWidth: '50%', showBackground: true, backgroundStyle: { color: 'rgba(47, 111, 126, 0.08)', borderRadius: [8, 8, 0, 0] },
+                    label: { show: true, position: 'top', color: '#f8fafc', fontSize: 11 },
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        function updateStatusChart(statusData) {
+            if (!statusData.length) { charts.status.clear(); return; }
+            charts.status.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '4%', top: '12%', bottom: '20%', containLabel: true },
+                xAxis: { type: 'category', data: statusData.map(d => d.database_status || 'Unknown'), axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 10, rotate: 25, interval: 0 } },
+                yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)', type: 'dashed' } } },
+                series: [{
+                    type: 'bar',
+                    data: statusData.map((d, i) => ({ value: d.count, itemStyle: { color: colors.gradient[i % colors.gradient.length], borderRadius: [6, 6, 0, 0], shadowBlur: 10, shadowColor: 'rgba(6, 182, 212, 0.3)' } })),
+                    barWidth: '45%', showBackground: true, backgroundStyle: { color: 'rgba(47, 111, 126, 0.06)', borderRadius: [6, 6, 0, 0] },
+                    label: { show: true, position: 'top', color: '#f8fafc', fontSize: 11, fontWeight: 'bold' },
+                    animationDuration: 300
+                }]
+            });
+        }
+
+        // Growth chart display function (used by filter)
+        function updateGrowthChartDisplay(timeframe) {
+            const isMonthly = timeframe === 'monthly';
+            const chartData = currentFilteredGrowthData
+                ? (isMonthly ? currentFilteredGrowthData.monthly : currentFilteredGrowthData.yearly)
+                : (isMonthly ? (data.growth_monthly || []) : (data.growth_yearly || []));
+
+            document.getElementById('btn-monthly').style.background = isMonthly ? '#0ea5e9' : 'transparent';
+            document.getElementById('btn-monthly').style.color = isMonthly ? 'white' : '#94a3b8';
+            document.getElementById('btn-yearly').style.background = !isMonthly ? '#0ea5e9' : 'transparent';
+            document.getElementById('btn-yearly').style.color = !isMonthly ? 'white' : '#94a3b8';
+
+            if (!chartData.length) {
+                charts.growth.clear();
+                return;
+            }
+
+            charts.growth.setOption({
+                backgroundColor: 'transparent',
+                tooltip: { trigger: 'axis', axisPointer: { type: 'cross', label: { backgroundColor: '#2F6F7E' } }, backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(47, 111, 126, 0.5)', textStyle: { color: '#f8fafc' } },
+                grid: { left: '3%', right: '4%', top: '10%', bottom: '10%', containLabel: true },
+                xAxis: { type: 'category', boundaryGap: false, data: chartData.map(d => d.label), axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' } },
+                yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.3)', type: 'dashed' } } },
+                series: [{
+                    name: 'Total Databases', type: 'line', smooth: true,
+                    lineStyle: { width: 3, color: '#22d3ee' },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(34, 211, 238, 0.5)' }, { offset: 1, color: 'rgba(34, 211, 238, 0.05)' }]) },
+                    itemStyle: { color: '#22d3ee', borderWidth: 2, borderColor: '#fff' },
+                    data: chartData.map(d => d.total)
+                }, {
+                    name: isMonthly ? 'New Installations (Monthly)' : 'New Installations (Yearly)',
+                    type: 'bar', barWidth: isMonthly ? 10 : 20,
+                    itemStyle: { color: 'rgba(34, 211, 238, 0.3)', borderRadius: [5, 5, 0, 0] },
+                    data: chartData.map(d => d.added)
+                }]
+            });
+        }
+
+        // Growth chart toggle (called by buttons)
+        window.updateGrowthChart = function (timeframe) {
+            updateGrowthChartDisplay(timeframe);
+        };
+
+        // Initialize
+        initCharts();
+        initFilterPanel();
+        updateChartsWithFilteredData(rawData);
+        if (data.growth_monthly && data.growth_monthly.length > 0) {
+            updateGrowthChart('monthly');
+        }
+
+        // Handle resize
+        window.addEventListener('resize', function () {
+            Object.values(charts).forEach(chart => { if (chart) chart.resize(); });
+        });
+
+        // Re-init Lucide
+        setTimeout(function () { lucide.createIcons(); }, 100);
+    });
+</script>
+{% endblock %}

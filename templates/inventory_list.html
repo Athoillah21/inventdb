@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory - PostgreSQL Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Database Inventory</h1>
+    <p>Manage your PostgreSQL database infrastructure</p>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2><i data-lucide="server" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;"></i>All
+            Databases ({{ page_obj.paginator.count }} records)</h2>
+        <div class="table-actions">
+            <a href="{% url 'inventory_create' %}" class="btn btn-primary"><i data-lucide="plus-circle"></i> Add New
+                Database</a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="get" class="filter-grid">
+            <div class="filter-group">
+                <label>Hostname</label>
+                <input type="text" name="hostname" class="form-control" placeholder="Search hostname..."
+                    value="{{ current_filters.hostname }}">
+            </div>
+            <div class="filter-group">
+                <label>Database</label>
+                <input type="text" name="db" class="form-control" placeholder="Search database..."
+                    value="{{ current_filters.db }}">
+            </div>
+            <div class="filter-group">
+                <label>Category</label>
+                <select name="category" class="form-control" id="categorySelect">
+                    <option value="">All Categories</option>
+                    <option value="Production">Production</option>
+                    <option value="Development">Development</option>
+                    <option value="Pre Production">Pre Production</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Site</label>
+                <select name="site" class="form-control" id="siteSelect">
+                    <option value="">All Sites</option>
+                    <option value="BSD">BSD</option>
+                    <option value="TBS">TBS</option>
+                    <option value="BRN">BRN</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Role (Master/Slave)</label>
+                <select name="role" class="form-control" id="roleSelect">
+                    <option value="">All Roles</option>
+                    <option value="Master">Master</option>
+                    <option value="Slave">Slave/Standby</option>
+                    <option value="Single">Single Instance</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <input type="text" name="status" class="form-control" placeholder="Search status..."
+                    value="{{ current_filters.status }}">
+            </div>
+            <div class="filter-group" style="justify-content: flex-end;">
+                <label>&nbsp;</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary btn-sm"
+                        style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg style="width:16px; height:16px; flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <span>Filter</span>
+                    </button>
+                    <a href="{% url 'inventory_list' %}" class="btn btn-secondary btn-sm"
+                        style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                        <svg style="width:16px; height:16px; flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        <span>Reset</span>
+                    </a>
+                    <a href="{% url 'inventory_export' %}?{{ request.GET.urlencode }}" class="btn btn-secondary btn-sm"
+                        style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                        <svg style="width:16px; height:16px; flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Download</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Hostname</th>
+                    <th>DB</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Site</th>
+                    <th>Version</th>
+                    <th>Port</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in inventories %}
+                <tr>
+                    <td>{{ inv.no }}</td>
+                    <td><strong>{{ inv.hostname }}</strong></td>
+                    <td>{{ inv.db }}</td>
+                    <td>{{ inv.database_status|truncatechars:25 }}</td>
+                    <td>
+                        {% if inv.category_database == 'Production' %}
+                        <span class="badge badge-production">{{ inv.category_database }}</span>
+                        {% elif inv.category_database == 'Development' %}
+                        <span class="badge badge-development">{{ inv.category_database }}</span>
+                        {% else %}
+                        <span class="badge badge-preprod">{{ inv.category_database }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-site">{{ inv.site }}</span></td>
+                    <td>{{ inv.version|truncatechars:20 }}</td>
+                    <td>{{ inv.port }}</td>
+                    <td>
+                        <a href="{% url 'inventory_update' inv.pk %}" class="btn btn-secondary btn-sm" title="Edit"><i
+                                data-lucide="edit-2"></i></a>
+                        <a href="{% url 'inventory_delete' inv.pk %}" class="btn btn-danger btn-sm" title="Delete"><i
+                                data-lucide="trash-2"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No databases found. Add your first database!</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1">« First</a>
+        <a href="?page={{ page_obj.previous_page_number }}">‹ Prev</a>
+        {% endif %}
+
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next ›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Set selected values from URL parameters using JavaScript
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const category = urlParams.get('category');
+        if (category) {
+            document.getElementById('categorySelect').value = category;
+        }
+
+        const site = urlParams.get('site');
+        if (site) {
+            document.getElementById('siteSelect').value = site;
+        }
+
+        const role = urlParams.get('role');
+        if (role) {
+            document.getElementById('roleSelect').value = role;
+        }
+
+        // Re-initialize Lucide icons
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}
