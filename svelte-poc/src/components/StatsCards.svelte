@@ -133,6 +133,7 @@
         align-items: center;
         text-align: center;
         border: 1px solid rgba(47, 111, 126, 0.2);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         transition:
             transform 0.3s ease,

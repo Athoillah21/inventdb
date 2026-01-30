@@ -670,6 +670,7 @@
             rgba(15, 23, 42, 0.6) 100%
         );
         border: 1px solid rgba(47, 111, 126, 0.2);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
         border-radius: 16px;
         overflow: hidden;
@@ -991,6 +992,7 @@
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.7);
+        -webkit-backdrop-filter: blur(4px);
         backdrop-filter: blur(4px);
         display: flex;
         justify-content: center;

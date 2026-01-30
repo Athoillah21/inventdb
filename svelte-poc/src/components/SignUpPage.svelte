@@ -144,6 +144,7 @@
     /* Reuse same styles as Login Page for consistency */
     .login-container {
         min-height: 100vh;
+        min-height: -webkit-fill-available;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -154,6 +155,8 @@
             #0f172a 100%
         );
         padding: 20px;
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
 
     .login-card {
@@ -168,6 +171,7 @@
         max-width: 420px;
         border: 1px solid rgba(47, 111, 126, 0.3);
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
     }
 

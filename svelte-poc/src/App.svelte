@@ -402,20 +402,25 @@
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
         min-height: 100vh;
+        min-height: -webkit-fill-available; /* iOS Safari fix */
         color: #f8fafc;
         overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
     /* Loading Screen & Transition Styles */
     .loading-screen,
     .transition-screen {
         height: 100vh;
+        height: -webkit-fill-available;
         width: 100%;
         position: fixed;
         top: 0;
         left: 0;
         z-index: 2000;
         background: rgba(15, 23, 42, 0.95);
+        -webkit-backdrop-filter: blur(20px);
         backdrop-filter: blur(20px);
         display: flex;
         align-items: center;
