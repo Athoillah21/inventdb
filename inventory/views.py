@@ -382,12 +382,15 @@ def api_login(request):
         data = json_module.loads(request.body)
         username = data.get('username', '')
         password = data.get('password', '')
+
+        print(f"DEBUG: api_login attempt for user: {username}")
     except:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
     
     user = authenticate(request, username=username, password=password)
     if user is not None:
+        print(f"DEBUG: api_login success for {username}")
         auth_login(request, user)
         return JsonResponse({
             'success': True,
@@ -398,13 +401,20 @@ def api_login(request):
         from django.contrib.auth.models import User
         try:
             user_obj = User.objects.get(username=username)
+            print(f"DEBUG: User found: {user_obj.username}, Active: {user_obj.is_active}")
             if user_obj.check_password(password):
                 if not user_obj.is_active:
+                    print("DEBUG: User inactive")
                     return JsonResponse({
                         'success': False,
                         'error': 'Account pending approval. Please wait for admin verification.',
                     }, status=401)
+                else:
+                    print("DEBUG: Password correct, Active True, but authenticate returned None? Wut?")
+            else:
+                print("DEBUG: Password incorrect")
         except User.DoesNotExist:
+            print("DEBUG: User does not exist")
             pass
 
         return JsonResponse({

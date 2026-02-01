@@ -44,20 +44,25 @@ def process_callback(callback):
     response_text = ""
     
     try:
+        print(f"DEBUG: Processing callback for user_id: {user_id}, action: {action}")
         user = User.objects.get(id=user_id)
         
         if action == 'approve':
             user.is_active = True
             user.save()
+            print(f"DEBUG: User {user.username} approved and saved. Active={user.is_active}")
             response_text = f"✅ User *{user.username}* has been APPROVED."
         elif action == 'deny':
             # Delete the user so they can try again or just to clear the record
             user.delete()
+            print(f"DEBUG: User {user.username} denied and deleted.")
             response_text = f"❌ User *{user.username}* has been DENIED and deleted."
             
     except User.DoesNotExist:
+        print(f"DEBUG: User ID {user_id} not found.")
         response_text = "⚠️ User record not found."
     except Exception as e:
+        print(f"DEBUG: Error in process_callback: {e}")
         logger.error(f"Callback error: {e}")
         response_text = "⚠️ Error processing request."
 
