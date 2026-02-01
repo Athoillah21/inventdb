@@ -394,6 +394,19 @@ def api_login(request):
             'user': user.username,
         })
     else:
+        # Check if user exists but is inactive
+        from django.contrib.auth.models import User
+        try:
+            user_obj = User.objects.get(username=username)
+            if user_obj.check_password(password):
+                if not user_obj.is_active:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Account pending approval. Please wait for admin verification.',
+                    }, status=401)
+        except User.DoesNotExist:
+            pass
+
         return JsonResponse({
             'success': False,
             'error': 'Invalid username or password',
