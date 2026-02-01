@@ -47,3 +47,6 @@ node_modules/
 # Svelte
 svelte-poc/.svelte-kit/
 svelte-poc/dist/
+
+# Tools
+ngrok.exe
