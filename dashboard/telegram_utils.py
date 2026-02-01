@@ -19,10 +19,14 @@ def send_approval_request(user):
     print(f"DEBUG: Sending to Telegram... Token={token[:5]}... ChatID={chat_id}") # DEBUG
 
 
+    # Escape Markdown characters in username/email
+    safe_username = user.username.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`')
+    safe_email = user.email.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`')
+
     message = (
         f"🆕 *New User Registration*\n\n"
-        f"👤 *Username*: {user.username}\n"
-        f"📧 *Email*: {user.email}\n"
+        f"👤 *Username*: {safe_username}\n"
+        f"📧 *Email*: {safe_email}\n"
         f"📅 *Date*: {user.date_joined.strftime('%Y-%m-%d %H:%M')}\n\n"
         f"⚠️ Account is inactive pending approval.\n"
         f"Please log in to the admin panel to activate."
