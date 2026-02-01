@@ -47,57 +47,82 @@
 
 <div class="login-container">
     <div class="login-card">
-        <div class="login-header">
-            <div class="logo">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="8.5" cy="7" r="4"></circle>
-                    <line x1="20" y1="8" x2="20" y2="14"></line>
-                    <line x1="23" y1="11" x2="17" y2="11"></line>
-                </svg>
-            </div>
-            <h1>Create Account</h1>
-            <p>Sign up for PostgreSQL Dashboard</p>
-        </div>
-
         {#if successMessage}
-            <div style="text-align: center; padding: 20px 0;">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="64"
-                    height="64"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#4ade80"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    style="margin-bottom: 20px;"
-                >
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <h3 style="font-size: 20px; color: white; margin-bottom: 10px;">
-                    Approval Pending
-                </h3>
-                <p
-                    style="color: #94a3b8; margin-bottom: 25px; line-height: 1.5;"
-                >
+            <div class="success-content">
+                <!-- User/Account Icon -->
+                <div class="success-icon-bg">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                        ></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+
+                <h2 class="success-title">Create Account</h2>
+                <p class="success-subtitle">Sign up for PostgreSQL Dashboard</p>
+
+                <!-- Checkmark -->
+                <div class="checkmark-circle">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#4ade80"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+
+                <h3 class="approval-title">Approval Pending</h3>
+                <p class="approval-text">
                     {successMessage}
                 </p>
-                <button class="login-btn" on:click={goToLogin}
-                    >Return to Login</button
-                >
+
+                <button class="return-btn" on:click={goToLogin}>
+                    Return to Login
+                </button>
             </div>
         {:else}
+            <div class="login-header">
+                <div class="logo">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                        ></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+                <h1>Create Account</h1>
+                <p>Sign up for PostgreSQL Dashboard</p>
+            </div>
+
             <form on:submit|preventDefault={handleSubmit}>
                 {#if error}
                     <div class="error-message">
@@ -401,5 +426,92 @@
             margin-top: 20px;
             padding-top: 15px;
         }
+    }
+    /* Success Popup Styles */
+    .success-content {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 0;
+    }
+
+    .success-icon-bg {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #047c94 0%, #2f6f7e 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 20px rgba(4, 124, 148, 0.2);
+    }
+
+    .success-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #f8fafc;
+        margin: 0 0 8px;
+    }
+
+    .success-subtitle {
+        color: #94a3b8;
+        font-size: 14px;
+        margin: 0 0 30px;
+    }
+
+    .checkmark-circle {
+        margin-bottom: 15px;
+        animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .approval-title {
+        font-size: 20px;
+        color: #f8fafc;
+        margin: 0 0 10px;
+        font-weight: 600;
+    }
+
+    .approval-text {
+        color: #94a3b8;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        font-size: 14px;
+        max-width: 300px;
+    }
+
+    .return-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #047c94 0%, #22d3ee 100%);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+    }
+
+    .return-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(34, 211, 238, 0.4);
     }
 </style>
