@@ -74,6 +74,31 @@
         }, 3000);
     }
 
+    async function manualCheck() {
+        if (!username || !password) return;
+
+        loading = true; // Briefly show loading if we want, or just let it run
+        const result = await login(username, password);
+        loading = false;
+
+        if (result.success) {
+            if (pollInterval) clearInterval(pollInterval);
+            dispatch("signup");
+        } else {
+            if (
+                result.error === "Invalid username or password" ||
+                result.error === "User record not found"
+            ) {
+                if (pollInterval) clearInterval(pollInterval);
+                successMessage = "";
+                error = "Your account request was denied.";
+            } else {
+                // Still pending, maybe show a toast or just shake?
+                // For now, doing nothing is fine, the user sees it "did not login"
+            }
+        }
+    }
+
     function goToLogin() {
         if (pollInterval) clearInterval(pollInterval);
         dispatch("switch", { mode: "login" });
@@ -131,9 +156,20 @@
                     {successMessage}
                 </p>
 
-                <button class="return-btn" on:click={goToLogin}>
-                    Return to Login
-                </button>
+                <!-- Polling Feedback -->
+                <div class="polling-status">
+                    <span class="spinner-small"></span>
+                    <p>Scanning for approval...</p>
+                </div>
+
+                <div class="button-group">
+                    <button class="check-btn" on:click={manualCheck}>
+                        Check Status Now
+                    </button>
+                    <button class="return-btn secondary" on:click={goToLogin}>
+                        Return to Login
+                    </button>
+                </div>
             </div>
         {:else}
             <div class="login-header">
@@ -548,5 +584,66 @@
     .return-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(34, 211, 238, 0.4);
+    }
+    .polling-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        background: rgba(34, 211, 238, 0.1);
+        padding: 8px 16px;
+        border-radius: 20px;
+    }
+
+    .polling-status p {
+        margin: 0;
+        font-size: 13px;
+        color: #22d3ee;
+    }
+
+    .spinner-small {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(34, 211, 238, 0.3);
+        border-top-color: #22d3ee;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .button-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .check-btn {
+        width: 100%;
+        padding: 14px;
+        background: rgba(34, 211, 238, 0.15);
+        border: 1px solid rgba(34, 211, 238, 0.5);
+        border-radius: 10px;
+        color: #22d3ee;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .check-btn:hover {
+        background: rgba(34, 211, 238, 0.25);
+    }
+
+    .return-btn.secondary {
+        background: transparent;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        color: #94a3b8;
+        box-shadow: none;
+    }
+
+    .return-btn.secondary:hover {
+        border-color: #94a3b8;
+        color: #f8fafc;
+        transform: none;
     }
 </style>
