@@ -51,10 +51,9 @@ def process_callback(callback):
             user.save()
             response_text = f"✅ User *{user.username}* has been APPROVED."
         elif action == 'deny':
-            # We keep them inactive (or could delete them)
-            user.is_active = False 
-            user.save()
-            response_text = f"❌ User *{user.username}* has been DENIED."
+            # Delete the user so they can try again or just to clear the record
+            user.delete()
+            response_text = f"❌ User *{user.username}* has been DENIED and deleted."
             
     except User.DoesNotExist:
         response_text = "⚠️ User record not found."

@@ -1,6 +1,6 @@
 <script>
-    import { signup } from "../auth.js";
-    import { createEventDispatcher } from "svelte";
+    import { signup, login } from "../auth.js";
+    import { createEventDispatcher, onDestroy } from "svelte";
 
     const dispatch = createEventDispatcher();
 
@@ -10,6 +10,12 @@
     let error = "";
     let successMessage = "";
     let loading = false;
+    let pollInterval;
+
+    // Stop polling when component is destroyed
+    onDestroy(() => {
+        if (pollInterval) clearInterval(pollInterval);
+    });
 
     async function handleSubmit() {
         if (!username || !password || !confirmPassword) {
@@ -32,6 +38,8 @@
         if (result.success) {
             if (result.pending) {
                 successMessage = result.message;
+                // Start Polling for Approval
+                startPolling();
             } else {
                 dispatch("signup");
             }
@@ -40,7 +48,34 @@
         }
     }
 
+    function startPolling() {
+        if (pollInterval) clearInterval(pollInterval);
+
+        // Poll every 3 seconds
+        pollInterval = setInterval(async () => {
+            const result = await login(username, password);
+            if (result.success) {
+                // Approved! Auto-login
+                clearInterval(pollInterval);
+                dispatch("signup"); // Redirect to dashboard
+            } else {
+                // Check if error is specifically "Invalid credentials" which means Denied/Deleted
+                // If it's still "Account pending approval", we keep polling.
+                if (
+                    result.error === "Invalid username or password" ||
+                    result.error === "User record not found"
+                ) {
+                    // User was Denied (Deleted)
+                    clearInterval(pollInterval);
+                    successMessage = ""; // Hide popup
+                    error = "Your account request was denied."; // Show error
+                }
+            }
+        }, 3000);
+    }
+
     function goToLogin() {
+        if (pollInterval) clearInterval(pollInterval);
         dispatch("switch", { mode: "login" });
     }
 </script>
