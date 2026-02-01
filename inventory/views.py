@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.cache import never_cache
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -423,13 +424,21 @@ def api_signup(request):
     
     # Create user
     user = User.objects.create_user(username=username, password=password)
+    user.is_active = False # Pending approval
+    user.save()
     
-    # Login
-    auth_login(request, user)
-    
+    # Send Telegram Notification
+    try:
+        from dashboard.telegram_utils import send_approval_request
+        send_approval_request(user)
+    except Exception as e:
+        print(f"Error sending telegram: {e}")
+
+    # Return pending status (Do not login)
     return JsonResponse({
         'success': True,
-        'user': user.username,
+        'message': 'Account created successfully! Your account is pending admin approval. You will be notified when active.',
+        'pending': True
     })
 
 
@@ -439,6 +448,7 @@ def api_logout(request):
     return JsonResponse({'success': True})
 
 
+@never_cache
 def api_check_auth(request):
     """Check if user is authenticated."""
     if request.user.is_authenticated:

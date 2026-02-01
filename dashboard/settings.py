@@ -93,7 +93,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN = '8329694951:AAH5qt-yyg0X9aanhXLQgzq08MSJLspzRWk'
+TELEGRAM_CHAT_ID = '782633231'
 
 # Authentication settings
 LOGIN_URL = 'login'
@@ -124,8 +126,8 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
 
-# For local development, override
-if DEBUG:
+# For local development, override ONLY if not on Vercel
+if DEBUG and not os.environ.get('VERCEL'):
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SAMESITE = 'Lax'

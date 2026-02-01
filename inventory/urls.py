@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import webhook_view
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -19,4 +20,7 @@ urlpatterns = [
     path('api/inventory/create/', views.api_inventory_create, name='api_inventory_create'),
     path('api/inventory/<int:pk>/update/', views.api_inventory_update, name='api_inventory_update'),
     path('api/inventory/<int:pk>/delete/', views.api_inventory_delete, name='api_inventory_delete'),
+    
+    # Telegram Webhook
+    path('api/telegram/webhook/', webhook_view.telegram_webhook, name='telegram_webhook'),
 ]

@@ -8,6 +8,7 @@
     let password = "";
     let confirmPassword = "";
     let error = "";
+    let successMessage = "";
     let loading = false;
 
     async function handleSubmit() {
@@ -29,7 +30,11 @@
         loading = false;
 
         if (result.success) {
-            dispatch("signup");
+            if (result.pending) {
+                successMessage = result.message;
+            } else {
+                dispatch("signup");
+            }
         } else {
             error = result.error;
         }
@@ -63,71 +68,102 @@
             <p>Sign up for PostgreSQL Dashboard</p>
         </div>
 
-        <form on:submit|preventDefault={handleSubmit}>
-            {#if error}
-                <div class="error-message">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    {error}
-                </div>
-            {/if}
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input
-                    type="text"
-                    id="username"
-                    bind:value={username}
-                    placeholder="Choose a username"
-                    autocomplete="username"
-                    disabled={loading}
-                />
+        {#if successMessage}
+            <div style="text-align: center; padding: 20px 0;">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#4ade80"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="margin-bottom: 20px;"
+                >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h3 style="font-size: 20px; color: white; margin-bottom: 10px;">
+                    Approval Pending
+                </h3>
+                <p
+                    style="color: #94a3b8; margin-bottom: 25px; line-height: 1.5;"
+                >
+                    {successMessage}
+                </p>
+                <button class="login-btn" on:click={goToLogin}
+                    >Return to Login</button
+                >
             </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    bind:value={password}
-                    placeholder="Choose a password"
-                    autocomplete="new-password"
-                    disabled={loading}
-                />
-            </div>
-
-            <div class="form-group">
-                <label for="confirm-password">Confirm Password</label>
-                <input
-                    type="password"
-                    id="confirm-password"
-                    bind:value={confirmPassword}
-                    placeholder="Confirm your password"
-                    autocomplete="new-password"
-                    disabled={loading}
-                />
-            </div>
-
-            <button type="submit" class="login-btn" disabled={loading}>
-                {#if loading}
-                    <span class="spinner"></span>
-                    Creating Account...
-                {:else}
-                    Sign Up
+        {:else}
+            <form on:submit|preventDefault={handleSubmit}>
+                {#if error}
+                    <div class="error-message">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        {error}
+                    </div>
                 {/if}
-            </button>
-        </form>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        bind:value={username}
+                        placeholder="Choose a username"
+                        autocomplete="username"
+                        disabled={loading}
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        bind:value={password}
+                        placeholder="Choose a password"
+                        autocomplete="new-password"
+                        disabled={loading}
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirm-password"
+                        bind:value={confirmPassword}
+                        placeholder="Confirm your password"
+                        autocomplete="new-password"
+                        disabled={loading}
+                    />
+                </div>
+
+                <button type="submit" class="login-btn" disabled={loading}>
+                    {#if loading}
+                        <span class="spinner"></span>
+                        Creating Account...
+                    {:else}
+                        Sign Up
+                    {/if}
+                </button>
+            </form>
+        {/if}
 
         <div class="login-footer">
             <p>

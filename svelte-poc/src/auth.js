@@ -10,7 +10,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || '';
 // Check authentication status
 export async function checkAuth() {
     try {
-        const response = await fetch(`${API_BASE}/api/check-auth/`, {
+        const response = await fetch(`${API_BASE}/api/check-auth/?t=${Date.now()}`, {
             credentials: 'include',
         });
         const data = await response.json();
@@ -69,6 +69,9 @@ export async function signup(username, password) {
         const data = await response.json();
 
         if (data.success) {
+            if (data.pending) {
+                return { success: true, pending: true, message: data.message };
+            }
             isAuthenticated.set(true);
             currentUser.set(data.user);
             return { success: true };
