@@ -94,8 +94,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = '8329694951:AAH5qt-yyg0X9aanhXLQgzq08MSJLspzRWk'
-TELEGRAM_CHAT_ID = '782633231'
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 # Authentication settings
 LOGIN_URL = 'login'
